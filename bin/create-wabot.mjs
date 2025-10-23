@@ -8,6 +8,7 @@ import path from 'path'
 import fs from 'fs/promises'
 
 async function createProject(projectName, options) {
+  console.log(options)
   try {
     // Get the absolute path for the project
     const targetDir = path.resolve(process.cwd(), projectName)
@@ -42,8 +43,12 @@ async function createProject(projectName, options) {
     // Write the updated package.json
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
 
+    // Create .env file
+    await createEnvFile(targetDir, options.dbUrl, options.llmUrl, options.apiKey)
+
     console.log(chalk.green('\nSuccess! 🎉 Created', projectName))
     console.log('\nInside that directory, you can run several commands:')
+    console.log(chalk.yellow('\n  .env file add DATABASE_URL, WABOT_LLM_URL, WABOT_API_KEY'))
     console.log(chalk.cyan('\n  npm install'))
     console.log('    Install the project dependencies')
     console.log(chalk.cyan('\n  npm start'))
@@ -59,12 +64,25 @@ async function createProject(projectName, options) {
   }
 }
 
+async function createEnvFile(targetDir, dbUrl, llmUrl, apiKey) {
+  const envContent = `
+DATABASE_URL=${dbUrl}
+WABOT_LLM_URL=${llmUrl}
+WABOT_API_KEY=${apiKey}
+`
+
+  await fs.writeFile(path.join(targetDir, '.env'), envContent.trim())
+}
+
 // Set up the CLI
 program
   .name('create-wabot')
   .description('Create a new Wabot project')
   .argument('[project-directory]', 'project name')
-  .action(async (projectDirectory) => {
+  .option('--db-url <dbUrl>', 'database url')
+  .option('--llm-url <llmUrl>', 'llm url')
+  .option('--api-key <key>', 'api key')
+  .action(async (projectDirectory, options) => {
     let projectName = projectDirectory
 
     if (!projectName) {
@@ -83,7 +101,7 @@ program
       projectName = response.projectName
     }
 
-    await createProject(projectName)
+    await createProject(projectName, options)
   })
 
 program.parse()

@@ -46,8 +46,8 @@ async function createProject(projectName, options) {
     await createEnvFile(targetDir, options.dbUrl, options.llmUrl, options.apiKey)
 
     console.log(chalk.green('\nSuccess! 🎉 Created', projectName))
-    console.log('\nInside that directory, you can run several commands:')
     console.log(chalk.yellow('\n  .env file add DATABASE_URL, WABOT_LLM_URL, WABOT_API_KEY'))
+    console.log('\nInside that directory, you can run several commands:')
     console.log(chalk.cyan('\n  npm install'))
     console.log('    Install the project dependencies')
     console.log(chalk.cyan('\n  npm start'))

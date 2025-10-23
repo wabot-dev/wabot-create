@@ -8,7 +8,6 @@ import path from 'path'
 import fs from 'fs/promises'
 
 async function createProject(projectName, options) {
-  console.log(options)
   try {
     // Get the absolute path for the project
     const targetDir = path.resolve(process.cwd(), projectName)

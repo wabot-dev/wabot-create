@@ -32,45 +32,73 @@ async function createProject(projectName, options) {
 
     await emitter.clone(targetDir)
 
-    // Read the template's package.json
     const packageJsonPath = path.join(targetDir, 'package.json')
     const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'))
 
-    // Update package.json with the new project name
+
     packageJson.name = projectName
 
-    // Write the updated package.json
     await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2))
-
-    // Create .env file
-    await createEnvFile(targetDir, options.dbUrl, options.llmUrl, options.apiKey)
+    
+    const definedVars = await createEnvFile(targetDir, options.dbUrl, options.llmUrl, options.apiKey)
 
     console.log(chalk.green('\nSuccess! 🎉 Created', projectName))
-    console.log(chalk.yellow('\n  .env file add DATABASE_URL, WABOT_LLM_URL, WABOT_API_KEY'))
+    
+    // Solo mostrar mensaje de variables si hay alguna definida
+    if (definedVars.length > 0) {
+      console.log(chalk.yellow(`\n  Opcional: Puedes configurar ${definedVars.join(', ')} en el archivo .env`))
+    }
     console.log('\nInside that directory, you can run several commands:')
-    console.log(chalk.cyan('\n  npm install'))
-    console.log('    Install the project dependencies')
-    console.log(chalk.cyan('\n  npm start'))
-    console.log('    Starts the development server')
     console.log('\nWe suggest that you begin by typing:')
     console.log(chalk.cyan(`\n  cd ${projectName}`))
     console.log(chalk.cyan('  npm install'))
-    console.log(chalk.cyan('  npm start'))
-    console.log('\nHappy hacking! 🚀\n')
+    console.log(chalk.cyan('  npm run dev'))
+    console.log('\nHappy developing! 🚀\n')
   } catch (error) {
     console.error(chalk.red('Error:'), error)
     process.exit(1)
   }
 }
 
-async function createEnvFile(targetDir, dbUrl, llmUrl, apiKey) {
-  const envContent = `
-DATABASE_URL=${dbUrl}
-WABOT_LLM_URL=${llmUrl}
-WABOT_API_KEY=${apiKey}
-`
 
-  await fs.writeFile(path.join(targetDir, '.env'), envContent.trim())
+/**
+ * Crea un archivo .env con las variables de entorno proporcionadas
+ * @param {string} targetDir - Directorio donde se creará el archivo .env
+ * @param {string} [dbUrl] - URL de la base de datos (opcional)
+ * @param {string} [llmUrl] - URL del modelo de lenguaje (opcional)
+ * @param {string} [apiKey] - Clave API (opcional)
+ * @returns {string[]} - Array con los nombres de las variables definidas
+ */
+async function createEnvFile(targetDir, dbUrl, llmUrl, apiKey) {
+  // Crear un objeto con las variables que tienen valores definidos
+  const envVars = {}
+  const definedVars = []
+  
+  // Solo agregar variables que tengan valores definidos
+  if (dbUrl) {
+    envVars.DATABASE_URL = dbUrl
+    definedVars.push('DATABASE_URL')
+  }
+  if (llmUrl) {
+    envVars.WABOT_LLM_URL = llmUrl
+    definedVars.push('WABOT_LLM_URL')
+  }
+  if (apiKey) {
+    envVars.WABOT_API_KEY = apiKey
+    definedVars.push('WABOT_API_KEY')
+  }
+  
+  // Convertir el objeto a formato de archivo .env
+  const envContent = Object.entries(envVars)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('\n')
+  
+  // Solo crear el archivo si hay al menos una variable definida
+  if (envContent) {
+    await fs.writeFile(path.join(targetDir, '.env'), envContent)
+  }
+  
+  return definedVars
 }
 
 // Set up the CLI

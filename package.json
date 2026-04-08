@@ -6,14 +6,13 @@
   "author": "",
   "type": "module",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "bin": {
     "create-wabot": "./bin/create-wabot.mjs"
   },
   "files": [
-    "bin"
+    "bin",
+    "lib",
+    "skills"
   ],
   "dependencies": {
     "chalk": "^5.4.1",

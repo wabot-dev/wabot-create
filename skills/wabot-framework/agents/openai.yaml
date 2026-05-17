@@ -1,5 +1,0 @@
-interface:
-  display_name: "Wabot Framework"
-  short_description: "Build apps with @wabot-dev/framework"
-  default_prompt: "Use this skill to implement, review, or debug Wabot applications using the bundled offline examples and reference files."
-

@@ -78,9 +78,9 @@ The `reply` callback comes from the channel — for `@cmd` it writes to stdout o
 
 | Decorator | Config | Notes |
 | --- | --- | --- |
-| `@cmd()` | none | Local Unix socket terminal client. Run `npm run cmd:channel` to chat. State stored under `.wabot/cmd-channel/<route>/`. |
+| `@cmd()` | none | Local Unix socket terminal client. Run `npm run cmd` to chat. State stored under `.wabot/cmd-channel/<route>/`. |
 | `@socket({ namespace })` | `namespace: string \| ConfigReference<string>` | Mounts a Socket.IO namespace. Tag-fn refs (`str\`socket.namespace\``) supported. |
-| `@telegram({ botToken })` | `botToken: string` | Long-poll Telegram bot. Pass the raw token. |
+| `@telegram({ botToken })` | `botToken: string \| ConfigReference<string>` | Long-poll Telegram bot. Raw token or `str\`telegram.bot_token\``. |
 | `@whatsApp(numberOrConfig)` | string OR `{ number, accessToken?, businessNumberId? }` (each may be a `ConfigReference`) | WhatsApp Cloud API. |
 | `@wasender(config?)` | `{ apiKey?, webhookSecret?, phoneNumber?, webhookPath? }` (each may be a `ConfigReference`) | WaSender integration. |
 
@@ -134,3 +134,7 @@ export class MyLlmAdapter implements IChatAdapter {
 - `@chatBot(Mindset)` is a parameter decorator — it can only appear in a constructor.
 - If you add a new chat adapter, its file must be imported during the runner's scan (so the `@chatAdapter` side-effect runs); place it inside `directories`.
 - Avoid building a mindset/controller pair when one controller can route between several mindsets with multiple `@chatBot(...)` constructor params.
+
+## Testing
+
+`createChatControllerHarness({ controller })` from `@wabot-dev/framework/testing` drives a `@chatController` end-to-end without a real channel (same per-message container path as production, `@chatBot` included), with a scripted `MockChatAdapter` playing the LLM. Custom `IChatAdapter` implementations should pass `chatAdapterConformanceCases`. See the `wabot-testing` skill.

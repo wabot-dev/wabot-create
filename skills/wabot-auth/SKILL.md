@@ -91,7 +91,7 @@ export class AuthController {
 
 `Jwt.createToken(metadata?)`:
 - Reads the current `auth.require()` info.
-- Persists a `JwtRefreshToken` via `JwtRefreshTokenRepository` (the runner picks `PgJwtRefreshTokenRepository` under PG; you can register your own).
+- Persists a `JwtRefreshToken` via `JwtRefreshTokenRepository`. The base class throws `Method not implemented` — the project must register an implementation: `container.registerType(JwtRefreshTokenRepository, PgJwtRefreshTokenRepository)` (table `wabot.jwt_refresh_token`), or its own.
 - Returns `{ access: { token, expiration }, refresh: { token, expiration } }`.
 
 `Jwt.findRefreshTokenAuthInfo(secret)` validates the refresh secret (hash-compare + expiration + revocation) and returns the original auth payload. Throws 401 if any check fails.
@@ -128,9 +128,9 @@ export class InternalController {
 export class AdminSocketController { /* ... */ }
 ```
 
-The guard reads the `X-Api-Key` header (REST) or `socket.handshake.auth.apiKey` (socket), validates via `ApiKeyRepository`, and assigns the lookup result to `Auth`.
+The guard reads `Authorization: Api-Key <secret>` (REST) or `socket.handshake.auth.token` / the `Authorization` handshake header (socket), validates via `ApiKeyRepository`, and assigns the lookup result to `Auth`.
 
-`ApiKeyRepository` defaults to `PgApiKeyRepository` under Postgres. A `RemoteApiKeyRepository` is also exported for delegating validation to an external service:
+`ApiKeyRepository` is a base class with no storage — register an implementation yourself: `container.registerType(ApiKeyRepository, PgApiKeyRepository)` (table `wabot.api_key`), or `RemoteApiKeyRepository` to delegate validation to an external service:
 
 ```typescript
 import { container, ApiKeyRepository, RemoteApiKeyRepository } from '@wabot-dev/framework'
@@ -147,3 +147,7 @@ Set `WABOT_API_KEY` and `WABOT_LLM_URL` to point `RemoteApiKeyRepository` at you
 - `@jwtGuard()` and `@apiKeyGuard()` work on REST endpoints; their `*HandshakeGuard()` variants work on socket controllers. Don't mix them up.
 - Never log `auth.require()` results — they may contain PII or token claims. Use a redacted view.
 - If you need a custom guard, implement `IMiddleware` (REST) or `IHandshakeMiddleware` (socket) and wire it with `@middleware(...)` / `@handshakeMiddlewares([...])`.
+
+## Testing
+
+From `@wabot-dev/framework/testing`: `RestHarness` with `jwt: true` registers a test `JwtConfig` so the real `@jwtGuard` works without env secrets (`harness.as(authInfo)` signs per-request tokens; `harness.jwt.signInvalid()` for 401 tests). `TestApiKeyRepository` is an in-RAM `ApiKeyRepository` for `@apiKeyGuard` (`register: [[ApiKeyRepository, repo]]`, `repo.addKey(authInfo)`). Harnesses also accept `authInfo` to populate the container-scoped `Auth` directly. See the `wabot-testing` skill.

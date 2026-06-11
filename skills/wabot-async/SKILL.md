@@ -92,14 +92,14 @@ The runner registers these into `CronScheduler`, which persists per-cron state i
 
 ## Transactions
 
-`@transaction(dbNames?)` wraps an async method so every adapter listed runs the call inside a transaction. Without arguments, all registered adapters participate (today there is one: `'pg'` when `DATABASE_URL` is Postgres).
+`@transaction(dbNames?)` wraps an async method so every adapter listed runs the call inside a transaction. Without arguments, all registered adapters participate (today there is one: the runner registers `PgTransactionAdapter` under the name `'default'` when `DATABASE_URL` is Postgres).
 
 ```typescript
 import { transaction } from '@wabot-dev/framework'
 
 @injectable()
 export class Checkout {
-  @transaction(['pg'])
+  @transaction()
   async checkout(orderId: string) {
     await this.orderRepository.update(...)
     await this.paymentRepository.create(...)
@@ -111,7 +111,7 @@ Behavior:
 - Repository writes performed inside the method go to the same client/connection.
 - Throwing rolls back; returning commits.
 - Nested `@transaction`-decorated calls reuse the outer transaction (no nested begin).
-- If you decorate with `@transaction(['pg'])` and the app is running without Postgres, the call still executes but no PG transaction wraps it (the in-memory adapter is a no-op).
+- Without Postgres no adapter is registered, so `@transaction()` just executes the method (no wrap). Naming a specific adapter (e.g. `@transaction(['default'])`) throws at call time if it isn't registered — never write `@transaction(['pg'])`.
 
 ## Manual run / stop
 
@@ -136,4 +136,8 @@ stopCronHandlers([DailyCleanup])
 - Don't reuse a command name for two handlers. The framework throws on boot.
 - Don't `await async.runCommand(...)` inside a request handler expecting it to finish synchronously — `runCommand` schedules the job and returns immediately. Use `async.scheduleCommand(..., { seconds: 0 })` if you want the same fire-and-forget behavior explicitly.
 - Cron expressions in seconds (6 fields) are supported but be careful: the in-memory adapter polls fast, the PG adapter polls at a lower rate.
-- Wrap multi-repository writes in `@transaction(['pg'])` rather than chaining manual `withPgTransaction` calls.
+- Wrap multi-repository writes in `@transaction()` rather than chaining manual `withPgTransaction` calls.
+
+## Testing
+
+`createAsyncHarness({ register?, authInfo? })` from `@wabot-dev/framework/testing` runs `@command` handlers (`harness.execute(Command, data)` — real validation, returns the transformed command) and `@cronHandler` jobs (`harness.runCron(Handler)`) inline, with no PostgreSQL or polling workers. `isValidCronSequence` and `waitUntil` help with schedule assertions. See the `wabot-testing` skill.

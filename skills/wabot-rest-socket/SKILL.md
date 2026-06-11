@@ -161,3 +161,7 @@ Both share one Express + HTTP server via `ExpressProvider` / `HttpServerProvider
 - Socket events can have up to 2 parameters: `(req, socket)`. The framework injects the active `Socket`.
 - Don't disable JSON parsing globally — disable per-endpoint via `@onPost({ path, disableJsonParser: true })` when you need raw bytes.
 - For auth, prefer `@jwtGuard()` / `@apiKeyGuard()` (see `wabot-auth`) over hand-rolled middleware.
+
+## Testing
+
+`createRestHarness({ controllers, jwt?, register? })` from `@wabot-dev/framework/testing` mounts `@restController` classes on a private ephemeral-port server and exercises the real pipeline (parsers, middlewares/guards, validation, error mapping). `harness.request(...)` returns `{ status, body, headers }`; `harness.as(authInfo)` sends signed Bearer tokens through the real `@jwtGuard`. See the `wabot-testing` skill.

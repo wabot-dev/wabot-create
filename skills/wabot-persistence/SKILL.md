@@ -132,20 +132,20 @@ export class GamePgQueries
 
 ## Transactions
 
-Wrap business methods with `@transaction(['pg'])` (or `@transaction()` to run in every registered adapter):
+Wrap business methods with `@transaction()` — it runs the call inside every registered transaction adapter:
 
 ```typescript
 import { transaction } from '@wabot-dev/framework'
 
 class CheckoutService {
-  @transaction(['pg'])
+  @transaction()
   async checkout(orderId: string) {
     // all repository writes here run inside one PG transaction
   }
 }
 ```
 
-The framework injects a `PgTransactionAdapter` automatically under Postgres mode. See `wabot-async` for command-level transactions.
+The project runner registers a `PgTransactionAdapter` under the name `'default'` when `DATABASE_URL` is Postgres (so `@transaction(['default'])` also works); without Postgres no adapter is registered and `@transaction()` executes the method directly. Never write `@transaction(['pg'])` — naming an unregistered adapter throws at call time. See `wabot-async` for command-level transactions.
 
 ## Rules
 
@@ -153,3 +153,7 @@ The framework injects a `PgTransactionAdapter` automatically under Postgres mode
 - Don't write SQL or memory iteration inside `@query()` methods — that's what `@queryExtension` is for.
 - Never mutate `entity['data']` directly outside the entity class. Use `entity.update(...)` or domain methods.
 - Repository classes are singletons; do not store per-request state on them.
+
+## Testing
+
+`useMemoryRepositories()` from `@wabot-dev/framework/testing` backs every `@repository` with an in-RAM adapter (no PostgreSQL, no `.wabot/` persistence) — call it once at the top of the test file, before anything resolves a repository. `entityFixture(Entity, data, { id? })` seeds already-created, validated entities. See the `wabot-testing` skill.

@@ -102,3 +102,7 @@ const game: GameDto = mapper.map(rawRow, GameDto)
 - Always pair `@description` with a type validator on mindset module request fields.
 - Prefer field defaults over `@isOptional()` when you have a sensible default; reserve `@isOptional()` for fields that may genuinely be absent.
 - Don't subclass `RestRequest` unless you want the raw Express `Request` injected into the endpoint — see `wabot-rest-socket`.
+
+## Testing
+
+`assertValid(Model, data)`, `assertInvalid(Model, data, { path? })` and `validateFixture(Model, data)` from `@wabot-dev/framework/testing` test decorated models directly, with issues flattened to `{ path: 'items[0].name', message }`. See the `wabot-testing` skill.

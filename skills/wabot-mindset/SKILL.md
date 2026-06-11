@@ -153,3 +153,7 @@ You don't write the system prompt by hand — `MindsetOperator.systemPrompt()` a
 - Don't put business logic in `context/skills/limits/workflow` — those return *strings*. Push logic into modules or services.
 - Don't decorate the mindset class with `@singleton()` — mindsets are chat-scoped and the runner builds one per chat.
 - Refer to validators and `@description` rules in `wabot-validation`.
+
+## Testing
+
+`createChatBotHarness({ mindset })` from `@wabot-dev/framework/testing` runs the real mindset — system prompt, tool loop, argument validation — against a scripted `MockChatAdapter`. `harness.callTool(name, args)` exercises one tool directly, `harness.systemPrompt()`/`tools()` snapshot what the model sees, and `LlmJudge` grades real-model evals. See the `wabot-testing` skill.

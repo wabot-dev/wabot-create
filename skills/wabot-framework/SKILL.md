@@ -33,7 +33,7 @@ if (process.env.WABOT_BUNDLED !== '1') {
 | --- | --- |
 | `npm run dev` | `node --import=@yucacodes/ts --env-file=./.env ./src/_run_.ts` |
 | `npm run dev:watch` | Same with `--watch --watch-preserve-output` |
-| `npm run cmd:channel` | Runs `runCmdClient()` — connects to the local cmd channel for terminal chats |
+| `npm run cmd` | Runs `runCmdClient()` — connects to the local cmd channel for terminal chats |
 | `npm run build` | Bundles to `dist/entry.js` via the framework's `build.js` |
 | `npm start` | Runs the bundle with `WABOT_BUNDLED=1` |
 | `npm run tsc` | `tsc --noEmit` |
@@ -69,6 +69,7 @@ Load the skill that matches the task:
 | Background commands, cron schedules, DB transactions | `wabot-async` |
 | Protect endpoints/sockets with JWT or API key | `wabot-auth` |
 | Logger, locking, errors, password hashing, randomness | `wabot-ops` |
+| Write tests or evals (harnesses, mocks, LlmJudge) | `wabot-testing` |
 
 ## Hard rules
 

@@ -7,6 +7,7 @@ import { installSkillsInProject, listSupportedAgents } from '../lib/skills/insta
 import { listSkills, listSkillNames } from '../lib/skills/registry.mjs'
 
 const EXPECTED_SKILLS = [
+  'wabot-agents',
   'wabot-async',
   'wabot-auth',
   'wabot-chat',
@@ -17,7 +18,9 @@ const EXPECTED_SKILLS = [
   'wabot-persistence',
   'wabot-rest-socket',
   'wabot-testing',
+  'wabot-ui',
   'wabot-validation',
+  'wabot-voice',
 ]
 
 const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'wabot-bulk-skills-'))
@@ -35,7 +38,7 @@ try {
 
 function testRegistryEnumeration() {
   const names = listSkillNames()
-  assert.deepEqual(names, EXPECTED_SKILLS, 'registry should expose the 11 packaged skills, sorted')
+  assert.deepEqual(names, EXPECTED_SKILLS, 'registry should expose the 14 packaged skills, sorted')
 
   const skills = listSkills()
   assert.equal(skills.length, EXPECTED_SKILLS.length)

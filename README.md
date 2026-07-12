@@ -1,189 +1,90 @@
 # `@wabot-dev/create`
 
-CLI para:
+CLI para crear un nuevo proyecto Wabot desde el template oficial e instalar las
+skills de agente que **vienen empaquetadas con `@wabot-dev/framework`**.
 
-- crear un nuevo proyecto Wabot desde el template oficial
-- instalar skills empaquetadas en distintos homes o targets de agentes
+> Las skills ya no viven en este paquete: son propiedad de `@wabot-dev/framework`
+> y se versionan junto con su API. Este CLI las descubre desde el framework
+> instalado en el proyecto y las copia a `.claude/`, `.codex/` y/o `.agents/`.
 
-## Instalación
-
-```bash
-npm install
-```
-
-Para probar el binario local:
+## Uso rápido
 
 ```bash
-node ./bin/create-wabot.mjs --help
+npm create @wabot-dev my-wabot-app
+# o
+npx @wabot-dev/create my-wabot-app
 ```
 
-## Comando principal
+El asistente pregunta: nombre, almacenamiento (memoria/postgres), proveedores de
+IA e instalación de skills de agente (por defecto sí). Luego:
 
-Crear un proyecto nuevo:
+1. clona el template oficial,
+2. corre `npm install` (deja `@wabot-dev/framework` en `node_modules`),
+3. copia las skills de ese framework a las carpetas de agente elegidas.
 
-```bash
-create-wabot <project-directory>
-```
+Si no pasás `project-directory`, se pregunta el nombre en modo interactivo.
 
-Ejemplo:
-
-```bash
-create-wabot my-wabot-app
-```
-
-Variaciones:
+Opciones:
 
 ```bash
 create-wabot my-wabot-app --db-url "postgres://localhost:5432/wabot"
-create-wabot my-wabot-app --llm-url "http://localhost:3000"
-create-wabot my-wabot-app --api-key "my-api-key"
-create-wabot my-wabot-app --db-url "postgres://localhost:5432/wabot" --llm-url "http://localhost:3000" --api-key "my-api-key"
+create-wabot my-wabot-app --lang es
 ```
 
-Si no pasás `project-directory`, el CLI pregunta el nombre del proyecto en modo interactivo.
+## Canal beta
 
-## Comando de skills
+Las builds beta de `@wabot-dev/create` (versión `X.Y.Z-beta.N`) scaffoldean desde
+la rama **`beta`** del template (`wabot-dev/wabot-template#beta`), que fija la
+versión beta del framework. Las builds estables usan la rama por defecto.
 
-Instalar una skill empaquetada:
+Para forzar una fuente concreta del template (p. ej. probar una rama antes de
+publicar) usá la variable de entorno:
 
 ```bash
-create-wabot skill add <skill-name>
+WABOT_TEMPLATE_REF="wabot-dev/wabot-template#beta" create-wabot my-app
 ```
 
-Skill disponible actualmente:
+## Skills en un proyecto existente
+
+Las skills se instalan solas al crear el proyecto. Para **agregarlas o
+actualizarlas** más tarde (por ejemplo tras subir la versión del framework), usá
+el bin que ships el propio framework:
 
 ```bash
-create-wabot skill add wabot-framework
+npx wabot-skills list                     # lista las skills empaquetadas
+npx wabot-skills sync                      # refresca las skills del proyecto a la
+                                           # versión de framework instalada
+npx wabot-skills sync --agents claude,codex
 ```
 
-## Variaciones de `skill add`
+`sync` sobrescribe en el lugar (resync); detecta las carpetas de agente ya
+presentes en el proyecto (`.claude`, `.codex`, `.agents`) o usá `--agents`.
 
-### 1. Instalación global por defecto
+## `create-wabot skill add` (instalación puntual)
 
-Usa el home del sistema y, si no se indica target, instala para `codex`.
-
-```bash
-create-wabot skill add wabot-framework
-```
-
-Resultado esperado:
-
-- `<os.homedir()>/.codex/skills/wabot-framework`
-
-### 2. Instalación local al proyecto
-
-Instala en el workspace actual:
+También podés instalar una skill suelta con este CLI. La fuente es el
+`@wabot-dev/framework` resoluble desde el proyecto/entorno actual.
 
 ```bash
-create-wabot skill add wabot-framework --local
-```
-
-Resultado esperado:
-
-- `./.agents/skills/wabot-framework`
-
-### 3. Instalación global con home explícito
-
-Instala usando un home root manual:
-
-```bash
-create-wabot skill add wabot-framework --global --home "/Users/demo"
-create-wabot skill add wabot-framework --global --home "C:\\Users\\demo"
-```
-
-### 4. Instalación global para un target único
-
-```bash
-create-wabot skill add wabot-framework --global --target codex
+create-wabot skill add wabot-framework --local          # ./.agents/skills/...
 create-wabot skill add wabot-framework --global --target claude
-create-wabot skill add wabot-framework --global --target agents
+create-wabot skill add wabot-framework --global --targets agents,codex,claude --home "/Users/demo"
 ```
 
-Con `--home`:
-
-```bash
-create-wabot skill add wabot-framework --global --home "C:\\Users\\demo" --target codex
-create-wabot skill add wabot-framework --global --home "C:\\Users\\demo" --target claude
-create-wabot skill add wabot-framework --global --home "C:\\Users\\demo" --target agents
-```
-
-Rutas esperadas:
-
-- `codex` -> `<home>/.codex/skills/wabot-framework`
-- `claude` -> `<home>/.claude/skills/wabot-framework`
-- `agents` -> `<home>/.agents/skills/wabot-framework`
-
-### 5. Instalación global para múltiples targets
-
-```bash
-create-wabot skill add wabot-framework --global --targets codex,claude
-create-wabot skill add wabot-framework --global --targets agents,codex,claude
-```
-
-Con `--home`:
-
-```bash
-create-wabot skill add wabot-framework --global --home "C:\\Users\\demo" --targets agents,codex,claude
-```
-
-Esto instala la misma skill en múltiples destinos dentro del mismo home root.
-
-## Reglas útiles
+Reglas:
 
 - `--local` y `--global` son excluyentes.
 - `--home`, `--target` y `--targets` aplican solo con `--global`.
-- Si no se pasa `--target` ni `--targets`, el default es `codex`.
-- Si el destino ya existe, el comando falla y no sobreescribe.
-- Si el target no existe en la lista soportada, el comando falla.
+- Si no se pasa `--target`/`--targets`, el default es `codex`.
+- Si el destino ya existe, falla y no sobrescribe (usá `wabot-skills sync` para refrescar).
 
-## Targets soportados
-
-```text
-agents
-codex
-claude
-```
-
-## Ejemplos completos
-
-Crear un proyecto:
-
-```bash
-create-wabot my-bot
-```
-
-Crear un proyecto con variables iniciales:
-
-```bash
-create-wabot my-bot \
-  --db-url "postgres://localhost:5432/mybot" \
-  --llm-url "http://localhost:3000" \
-  --api-key "secret"
-```
-
-Instalar la skill local al repo:
-
-```bash
-create-wabot skill add wabot-framework --local
-```
-
-Instalar la skill para Claude en otro home:
-
-```bash
-create-wabot skill add wabot-framework --global --home "C:\\Users\\another-user" --target claude
-```
-
-Instalar la skill para varios agentes en el mismo home:
-
-```bash
-create-wabot skill add wabot-framework --global --home "C:\\Users\\another-user" --targets agents,codex,claude
-```
+Targets soportados: `agents`, `codex`, `claude`.
 
 ## Desarrollo
 
-Mostrar ayuda:
-
 ```bash
+npm install                # linkea @wabot-dev/framework (file:../wabot-ts) para tests
+npm run test:smoke         # smokes del instalador de skills
 node ./bin/create-wabot.mjs --help
 node ./bin/create-wabot.mjs skill add --help
 ```

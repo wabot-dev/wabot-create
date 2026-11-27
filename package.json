@@ -14,7 +14,7 @@
     "lib"
   ],
   "scripts": {
-    "test:smoke": "node scripts/smoke-skills-bulk-install.mjs && node scripts/smoke-skill-installer.mjs"
+    "test:smoke": "node scripts/smoke-skills-bulk-install.mjs && node scripts/smoke-skill-installer.mjs && node scripts/smoke-provider-sdks.mjs"
   },
   "dependencies": {
     "chalk": "^5.4.1",

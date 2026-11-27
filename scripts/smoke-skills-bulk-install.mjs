@@ -17,7 +17,8 @@ const EXPECTED_SKILLS = [
   'wabot-mindset',
   'wabot-ops',
   'wabot-persistence',
-  'wabot-rest-socket',
+  'wabot-rest',
+  'wabot-socket',
   'wabot-testing',
   'wabot-ui',
   'wabot-validation',
@@ -39,7 +40,11 @@ try {
 
 function testRegistryEnumeration() {
   const names = listSkillNames()
-  assert.deepEqual(names, EXPECTED_SKILLS, 'registry should expose the 15 packaged skills, sorted')
+  assert.deepEqual(
+    names,
+    EXPECTED_SKILLS,
+    `registry should expose the ${EXPECTED_SKILLS.length} packaged skills, sorted`,
+  )
 
   const skills = listSkills()
   assert.equal(skills.length, EXPECTED_SKILLS.length)

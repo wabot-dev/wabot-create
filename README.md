@@ -20,7 +20,11 @@ IA e instalación de skills de agente (por defecto sí). Luego:
 
 1. clona el template oficial,
 2. corre `npm install` (deja `@wabot-dev/framework` en `node_modules`),
-3. copia las skills de ese framework a las carpetas de agente elegidas.
+3. instala el SDK de cada proveedor de IA elegido (`@openrouter/sdk`, `openai`,
+   `@anthropic-ai/sdk`, `@google/genai`) en el rango de versiones que declara ese
+   framework — desde la 2.0 el framework no los instala solo; se omite el que el
+   template ya declara,
+4. copia las skills de ese framework a las carpetas de agente elegidas.
 
 Si no pasás `project-directory`, se pregunta el nombre en modo interactivo.
 

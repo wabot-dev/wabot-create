@@ -4,6 +4,10 @@
   "description": "Project creator for Wabot Framework",
   "license": "ISC",
   "author": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wabot-dev/wabot-create"
+  },
   "type": "module",
   "main": "index.js",
   "bin": {
